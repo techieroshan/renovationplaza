@@ -9,7 +9,15 @@ export default function Home() {
     useEffect(() => {
         const checkCache = async () => {
             try {
-                const cacheUrl = window.location.origin + "/cache/latest.html";
+                // First get the meta information for cache busting
+                const metaRes = await fetch(window.location.origin + "/cache/meta.json?t=" + Date.now());
+                let cacheBuster = "";
+                if (metaRes.ok) {
+                    const meta = await metaRes.json();
+                    cacheBuster = "?v=" + encodeURIComponent(meta.lastUpdated);
+                }
+
+                const cacheUrl = window.location.origin + "/cache/latest.html" + cacheBuster;
                 const response = await fetch(cacheUrl, { method: 'GET' });
 
                 if (response.ok) {
