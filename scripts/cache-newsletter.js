@@ -38,15 +38,26 @@ async function cacheNewsletter() {
         // Wait specifically for a sign of articles
         try {
             console.log('Waiting for articles to appear...');
-            await page.waitForSelector('a[href*="PostID"]', { timeout: 30000 });
+            // Check for potential selectors
+            await Promise.race([
+                page.waitForSelector('a[href*="PostID"]', { timeout: 45000 }),
+                page.waitForSelector('.rasa-article', { timeout: 45000 }),
+                page.waitForSelector('tbody:has(a)', { timeout: 45000 })
+            ]);
+
             console.log('Articles found! Waiting for final settle...');
-            await new Promise(r => setTimeout(r, 5000));
+            await new Promise(r => setTimeout(r, 10000)); // Longer settle time
         } catch (e) {
-            console.warn('⚠️ Warning: Timeout waiting for articles. Page might not have rendered fully.');
+            console.error('❌ Error: Timeout waiting for articles. Aborting to avoid saving empty cache.');
+            process.exit(1);
         }
 
-        // Get the fully rendered HTML
+        // Final check: if the content is too small, something is wrong
         let content = await page.content();
+        if (content.length < 10000) {
+            console.error('❌ Error: Captured content is too small. Aborting.');
+            process.exit(1);
+        }
 
         // Basic heuristic to fix relative paths for a mirrored page
         content = content.replace(/src="\//g, 'src="https://pages.rasa.io/');
