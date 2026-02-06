@@ -45,18 +45,21 @@ jobs:
 
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ github.actor }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SERVER_PORT }}
+          envs: GH_TOKEN,USERNAME
           script: |
-            # Login to GHCR (using the same token if possible, or a PAT if setup)
-            # For public repos/packages, login might not be strictly necessary for pulling if configured right,
-            # but usually we need auth. specific command below assumes the server has `docker` group rights.
+            echo "Logging into GHCR..."
+            echo $GH_TOKEN | docker login ghcr.io -u $USERNAME --password-stdin
             
             echo "Pulling latest image..."
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker pull ghcr.io/techieroshan/renovationplaza:latest
             
             echo "Stopping old container..."
             docker stop renovationplaza || true
@@ -67,6 +70,6 @@ jobs:
               --name renovationplaza \
               --restart unless-stopped \
               -p 11155:80 \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+              ghcr.io/techieroshan/renovationplaza:latest
             
             echo "Deployment successful!"
