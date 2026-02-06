@@ -39,7 +39,7 @@ jobs:
           # Check if there are changes to the cache directory
           if [[ -n $(git status --porcelain public/cache/) ]]; then
             git add public/cache/
-            git commit -m "🤖 Update cached newsletter [skip ci]"
+            git commit -m "🤖 Update cached newsletter"
             git push
             echo "✅ Pushed updated cache"
           else
