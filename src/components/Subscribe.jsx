@@ -1,10 +1,15 @@
 import { useState } from 'react'
+import SEO from './SEO'
 
 export default function Subscribe() {
     const [loading, setLoading] = useState(true)
 
     return (
         <div className="page-container">
+            <SEO
+                title="Subscribe"
+                description="Join thousands of DIYers. Subscribe to RenovationPlaza for weekly renovation tips, guides, and inspiration delivered to your inbox."
+            />
             <div className="responsive-iframe-container fade-in">
                 {loading && (
                     <div className="loading-spinner">

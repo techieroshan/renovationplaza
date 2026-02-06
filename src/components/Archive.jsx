@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Calendar, ChevronRight, ArrowLeft } from 'lucide-react'
+import SEO from './SEO'
 import './Archive.css'
 
 export default function Archive() {
@@ -42,8 +43,31 @@ export default function Archive() {
         setSearchParams({})
     }
 
+    const selectedDateDisplay = dates.find(d => d.value === dateParam)?.display;
+    const pageTitle = dateParam ? `Newsletter: ${selectedDateDisplay || dateParam}` : 'Archives';
+    const pageDesc = dateParam
+        ? `Read the RenovationPlaza newsletter from ${selectedDateDisplay || dateParam}. Curated DIY and renovation tips.`
+        : 'Browse past editions of the RenovationPlaza weekly newsletter. Explore a wealth of DIY projects and renovation guides.';
+
     return (
         <div className="page-container archive-page">
+            <SEO
+                title={pageTitle}
+                description={pageDesc}
+                type="article"
+                publishedTime={dateParam}
+                schema={{
+                    "@type": "CollectionPage",
+                    "name": pageTitle,
+                    "description": pageDesc,
+                    "hasPart": dates.map(d => ({
+                        "@type": "PublicationIssue",
+                        "datePublished": d.value,
+                        "name": `RenovationPlaza Issue ${d.value}`,
+                        "url": `${window.location.origin}/archive?date=${d.value}`
+                    }))
+                }}
+            />
             <div className={`archive-sidebar ${dateParam ? 'mobile-hidden' : ''}`}>
                 <div className="archive-header">
                     <h2>Archive</h2>
