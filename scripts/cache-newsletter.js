@@ -29,24 +29,23 @@ async function cacheNewsletter() {
         // Set viewport to a reasonable desktop size
         await page.setViewport({ width: 1200, height: 800 });
 
-        console.log(`not navigating to: ${NEWSLETTER_URL}`);
+        console.log(`Navigating to: ${NEWSLETTER_URL}`);
         await page.goto(NEWSLETTER_URL, {
-            waitUntil: 'networkidle0', // Wait until network is quiet (SPA loaded)
+            waitUntil: 'networkidle2',
             timeout: 60000
         });
 
-        // Wait specifically for a sign of content
+        // Wait specifically for a sign of articles
         try {
-            await page.waitForSelector('img', { timeout: 10000 }); // Simple check for any image
+            console.log('Waiting for articles to appear...');
+            await page.waitForSelector('a[href*="PostID"]', { timeout: 30000 });
+            console.log('Articles found! Waiting for final settle...');
+            await new Promise(r => setTimeout(r, 5000));
         } catch (e) {
-            console.warn('⚠️ Warning: Timeout waiting for specific selectors, but continuing with snapshot.');
+            console.warn('⚠️ Warning: Timeout waiting for articles. Page might not have rendered fully.');
         }
 
         // Get the fully rendered HTML
-        // We inject a <base> tag so relative links (like /static/css) work if they point to rasa.io
-        // actually, rasa.io relative links might break if we serve from localhost.
-        // Let's rewrite relative links to absolute ones.
-
         let content = await page.content();
 
         // Basic heuristic to fix relative paths for a mirrored page
