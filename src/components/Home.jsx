@@ -29,9 +29,13 @@ export default function Home() {
                     </div>
                 )}
                 <iframe
-                    src="https://pages.rasa.io/newsbrief/b74efcba-ec5f-5f34-8baf-6321e400e9b6?"
+                    src="/cache/latest.html"
                     title="Latest Newsletter"
                     onLoad={() => setLoading(false)}
+                    onError={(e) => {
+                        console.warn('Cache load issue, falling back to live URL');
+                        e.target.src = "https://pages.rasa.io/newsbrief/b74efcba-ec5f-5f34-8baf-6321e400e9b6?";
+                    }}
                     allow="clipboard-read; clipboard-write"
                 />
             </div>

@@ -1,0 +1,47 @@
+name: Nightly Newsletter Cache
+
+on:
+  schedule:
+    # Run at 08:00 UTC every Tuesday (News day)
+    - cron: '0 8 * * 2'
+    # Also run daily at 08:00 UTC just in case
+    - cron: '0 8 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  cache-and-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Puppeteer
+        run: npm install puppeteer
+
+      - name: Run Cache Script
+        run: node scripts/cache-newsletter.js
+
+      - name: Commit and Push if Changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Check if there are changes to the cache directory
+          if [[ -n $(git status --porcelain public/cache/) ]]; then
+            git add public/cache/
+            git commit -m "🤖 Update cached newsletter [skip ci]"
+            git push
+            echo "✅ Pushed updated cache"
+          else
+            echo "⚡️ No changes to cache"
+          fi
