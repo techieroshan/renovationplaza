@@ -29,12 +29,11 @@ export default function Home() {
                     </div>
                 )}
                 <iframe
-                    src="/cache/latest.html"
+                    src={window.location.origin + "/cache/latest.html"}
                     title="Latest Newsletter"
-                    onLoad={() => setLoading(false)}
-                    onError={(e) => {
-                        console.warn('Cache load issue, falling back to live URL');
-                        e.target.src = "https://pages.rasa.io/newsbrief/b74efcba-ec5f-5f34-8baf-6321e400e9b6?";
+                    onLoad={() => {
+                        console.log('Newsletter cache loaded');
+                        setLoading(false);
                     }}
                     allow="clipboard-read; clipboard-write"
                 />
