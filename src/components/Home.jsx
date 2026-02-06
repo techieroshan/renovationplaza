@@ -3,6 +3,37 @@ import SEO from './SEO'
 
 export default function Home() {
     const [loading, setLoading] = useState(true)
+    const [iframeSrc, setIframeSrc] = useState(null)
+    const RASA_URL = "https://pages.rasa.io/newsbrief/b74efcba-ec5f-5f34-8baf-6321e400e9b6?";
+
+    useEffect(() => {
+        const checkCache = async () => {
+            try {
+                const cacheUrl = window.location.origin + "/cache/latest.html";
+                const response = await fetch(cacheUrl, { method: 'GET' });
+
+                if (response.ok) {
+                    const text = await response.text();
+                    // If it contains "id=\"root\"", it's likely the SPA fallback, not the newsletter
+                    if (text.includes('id="root"') || text.length < 5000) {
+                        console.warn('Cache file seems to be the SPA fallback, using live URL');
+                        setIframeSrc(RASA_URL);
+                    } else {
+                        console.log('Valid cache found, using local version');
+                        setIframeSrc(cacheUrl);
+                    }
+                } else {
+                    console.warn('Cache not found, using live URL');
+                    setIframeSrc(RASA_URL);
+                }
+            } catch (error) {
+                console.error('Error checking cache:', error);
+                setIframeSrc(RASA_URL);
+            }
+        };
+
+        checkCache();
+    }, []);
 
     return (
         <div className="page-container">
@@ -28,15 +59,17 @@ export default function Home() {
                         Loading Latest Newsletter...
                     </div>
                 )}
-                <iframe
-                    src={window.location.origin + "/cache/latest.html"}
-                    title="Latest Newsletter"
-                    onLoad={() => {
-                        console.log('Newsletter cache loaded');
-                        setLoading(false);
-                    }}
-                    allow="clipboard-read; clipboard-write"
-                />
+                {iframeSrc && (
+                    <iframe
+                        src={iframeSrc}
+                        title="Latest Newsletter"
+                        onLoad={() => {
+                            console.log('Newsletter loaded into iframe');
+                            setLoading(false);
+                        }}
+                        allow="clipboard-read; clipboard-write"
+                    />
+                )}
             </div>
         </div>
     )

@@ -49,11 +49,12 @@ async function cacheNewsletter() {
         let content = await page.content();
 
         // Basic heuristic to fix relative paths for a mirrored page
-        // Replacing src="/ with src="https://pages.rasa.io/
-        // Replacing href="/ with href="https://pages.rasa.io/
-
         content = content.replace(/src="\//g, 'src="https://pages.rasa.io/');
         content = content.replace(/href="\//g, 'href="https://pages.rasa.io/');
+
+        // REMOVE SCRIPTS to prevent the SPA from trying to re-initialize or redirect
+        // This makes the cached page truly static
+        content = content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
         // Write to file
         fs.writeFileSync(OUTPUT_FILE, content);
